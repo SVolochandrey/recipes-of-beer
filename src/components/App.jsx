@@ -1,84 +1,82 @@
-import React, { Component } from 'react';
-import { ContactForm } from './ContactForm/ContactForm';
-import { ContactList } from './ContactList/ContactList';
-import { Filter } from './Filter/Filter';
-import { nanoid } from 'nanoid';
-import './App.module.css';
+import React, { useEffect, useState } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import getRecipes from "../API";
+import RecipeList from "./RecipeList";
+import RecipeDetails from "./RecipeDetails";
+import "./App.css";
+import Header from "./Header/Header";
 
-export class App extends Component {
-  state = {
-    contacts: [
-      { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
-      { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
-      { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
-      { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
-    ],
-    filter: '',
-  };
+const App = () => {
+  const [recipes, setRecipes] = useState([]);
+  const [selectedRecipes, setSelectedRecipes] = useState([]);
+  const [page, setPage] = useState(1);
 
-  componentDidMount() {
-const contacts = localStorage.getItem('contacts');
-const parsedContacts = JSON.parse(contacts);
-
-if (parsedContacts) {
-this.setState({contacts: parsedContacts});
-}
-}
-
-componentDidUpdate(prevProps, prevState) {
-if (this.state.contacts !== prevState.contacts) {
-localStorage.setItem('contacts', JSON.stringify(this.state.contacts));
-}
-  }
-
-  formSubmit = ({ name, number }) => {
-    const contact = {
-      id: nanoid(),
-      name,
-      number,
+  useEffect(() => {
+    const fetchRecipes = async () => {
+      const data = await getRecipes(page);
+      setRecipes((prevRecipes) => [...prevRecipes, ...data]);
     };
-    this.state.contacts.some(
-      i =>
-        (i.name.toLowerCase() === contact.name.toLowerCase() &&
-          i.number === contact.number) ||
-        i.number === contact.number
-    )
-      ? alert(`${name} is already in contacts`)
-      : this.setState(({ contacts }) => ({
-          contacts: [contact, ...contacts],
-        }));
+
+    fetchRecipes();
+  }, [page]);
+
+  const handleSelectRecipe = (recipe) => {
+    if (selectedRecipes.includes(recipe.id)) {
+      setSelectedRecipes(selectedRecipes.filter((id) => id !== recipe.id));
+    } else {
+      setSelectedRecipes([...selectedRecipes, recipe.id]);
+    }
   };
 
-  changeFilterInput = e => {
-    this.setState({ filter: e.target.value });
-  };
-
-  findContacts = () => {
-    const { filter, contacts } = this.state;
-    return contacts.filter(contact =>
-      contact.name.toLowerCase().includes(filter.toLowerCase())
+  const handleDeleteSelected = () => {
+    setRecipes(
+      recipes.filter((recipe) => !selectedRecipes.includes(recipe.id))
     );
+    setSelectedRecipes([]);
   };
 
-  deleteContact = id => {
-    this.setState(prevState => ({
-      contacts: prevState.contacts.filter(contact => contact.id !== id),
-    }));
+  const handleScroll = () => {
+    const scrollHeight = document.documentElement.scrollHeight;
+    const scrollTop = document.documentElement.scrollTop;
+    const clientHeight = document.documentElement.clientHeight;
+
+    if (scrollTop + clientHeight >= scrollHeight) {
+      setPage((prevPage) => prevPage + 1);
+    }
   };
 
-  render() {
-    const { filter } = this.state;
-    return (
-      <section>
-        <h1>Phonebook</h1>
-        <ContactForm onSubmit={this.formSubmit} />
-        <h2>Contacts</h2>
-        <Filter filter={filter} changeFilterInput={this.changeFilterInput} />
-        <ContactList
-          contacts={this.findContacts()}
-          deleteContact={this.deleteContact}
-        />
-      </section>
-    );
-  }
-}
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  return (
+    <div className="app">
+      <Header />
+      <Routes>
+        <Route
+          exact
+          path="/"
+          element={
+            <RecipeList
+              recipes={recipes}
+              selectedRecipes={selectedRecipes}
+              onSelectRecipe={handleSelectRecipe}
+              onDeleteSelected={handleDeleteSelected}
+            />
+          }
+        ></Route>
+        <Route
+          path="/recipes/:recipeId"
+          exact
+          element={<RecipeDetails recipes={recipes} />}
+        ></Route>
+      </Routes>
+    </div>
+  );
+};
+
+export default App;

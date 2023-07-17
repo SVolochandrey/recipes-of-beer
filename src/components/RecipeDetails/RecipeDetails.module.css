@@ -1,0 +1,26 @@
+.recipe_content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+.recipe_image {
+  background-color: wheat;
+}
+
+img {
+  height: 170px;
+}
+
+.recipe_title {
+  text-align: center;
+  color: white;
+  font-size: 40px;
+  font-family: "Franklin Gothic Medium", "Arial Narrow", Arial, sans-serif;
+}
+
+.recipe_descr {
+  color: white;
+  font-size: 20px;
+}

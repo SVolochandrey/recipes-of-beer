@@ -1,0 +1,27 @@
+.link {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  justify-content: center;
+}
+
+.icon {
+  width: 35px;
+  height: 35px;
+}
+
+.title {
+  color: white;
+  text-shadow: 0px 0px 10px #cecece;
+  font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+}
+
+.title span {
+  color: orange;
+}
+
+.icon {
+  fill: #171718;
+  background-color: white;
+  border-radius: 10px;
+}
